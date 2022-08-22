@@ -109,8 +109,13 @@ import itertools
 import numpy as np
 import warnings
 
+from MDAnalysis.coordinates.PQR import PQRWriter
+
 from ..lib import util
 from . import base
+from MDAnalysis.core.groups import AtomGroup
+from MDAnalysis.core.universe import Universe
+from typing import Union, Optional
 
 
 class PQRReader(base.SingleFrameReaderBase):
@@ -132,7 +137,7 @@ class PQRReader(base.SingleFrameReaderBase):
         'GROMACS': (-6, -3),
     }
 
-    def _read_first_frame(self):
+    def _read_first_frame(self) -> None:
         from ..topology.PQRParser import PQRParser
         flavour = None
 
@@ -156,7 +161,7 @@ class PQRReader(base.SingleFrameReaderBase):
             # in-place !
             self.convert_pos_from_native(self.ts._pos)
 
-    def Writer(self, filename, **kwargs):
+    def Writer(self, filename: str, **kwargs) -> PQRWriter:
         """Returns a PQRWriter for *filename*.
 
         Parameters
@@ -197,7 +202,8 @@ class PQRWriter(base.WriterBase):
                 " {pos[2]:-8.3f} {charge:-7.4f} {radius:6.4f}\n")
     fmt_remark = "REMARK   {0} {1}\n"
 
-    def __init__(self, filename, convert_units=True, **kwargs):
+    def __init__(self, filename: str,
+                 convert_units: bool = True, **kwargs) -> None:
         """Set up a PQRWriter with full whitespace separation.
 
         Parameters
@@ -214,7 +220,9 @@ class PQRWriter(base.WriterBase):
         self.convert_units = convert_units  # convert length and time to base units
         self.remarks = kwargs.pop('remarks', "PQR file written by MDAnalysis")
 
-    def write(self, selection, frame=None):
+    def write(self,
+              selection: Union[AtomGroup, Universe],
+              frame: Optional[int] = None) -> None:
         """Write selection at current trajectory frame to file.
 
         Parameters
